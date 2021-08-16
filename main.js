@@ -26,19 +26,23 @@ info.onAdd = function (map) {
   return this._div;
 };
 
-info.update = function (props) {
-  this._div.innerHTML =
-    "<h4>Population</h4>" +
+info.update = function (props, type) {
+  this._div.innerHTML = 
     (props
       ? "<b>" +
         props.NAME +
-        " County</b><br />" +
-        "County Number " + 
-        props.COUNTY
-      : "Hover over a county");
+        (type === "county" ? " County" : "") +"</b><br />"
+      : "Hover over a county or state");
 };
 
 info.addTo(map);
+
+const dropdown = document.getElementById("states");
+for (let [state, price] of Object.entries(prices)) {
+  let option = document.createElement("option");
+  option.text = state;
+  dropdown.appendChild(option);
+}
 
 // get color depending on population density value
 function getColor(d) {
@@ -145,13 +149,13 @@ function highlightFeatureState(e) {
   layer.bringToFront();
   }
 
-  info.update(layer.feature.properties);
+  info.update(layer.feature.properties, "state");
 }
 
 function highlightFeatureMouseover(e) {
   var layer = e.target;
 
-  info.update(layer.feature.properties);
+  info.update(layer.feature.properties, "county");
 }
 
 var geojson, geojson_states, geojson_states_noclick;
@@ -256,67 +260,208 @@ const updateView = (populations) => {
   countyList.appendChild(li2);
 } 
 
-
-
-// let countyList = document.getElementById('CountyList')
 let countyTable = document.getElementById("CountyTable");
+let gd = document.getElementById('funnel');
+
 let created = false;
 let rows = [];
 
 const updateList = () => {
 
   let bmi40 = malePop * .069 + femalePop * .115;
-  let bmi30 = malePop * .17 + femalePop * .217;
-  let consults = bmi30 * .022;
+  let bmi35 = malePop * .17 + femalePop * .217;
+  let consults = bmi35 * .022;
   let referrals = consults / .74;
+  let activelySearching = (malePop + femalePop) * .009;
 
   let columnValues = [
     ["Male Population", malePop],
     ["Female Population", femalePop],
-    ["BMI > 35 Male", malePop * .17],
-    ["BMI > 35 Female", femalePop * .217],
-    ["Total Market BMI > 35", bmi30],
-    ["Actively Searching Rate", (malePop + femalePop) * .009],
-    ["Estimated Self Referrals", referrals * .7],
-    ["Estimated Clinal Referrals", referrals * .3],
-    ["Estimated Total Referrals", referrals],
-    ["Estimated Consults", consults],
-    ["Estimated Surgeries", consults * .5],
-    ["BMI > 40 Male", malePop * .069],
-    ["BMI > 40 Female", femalePop * .115],
-    ["Total Market BMI > 40", bmi40],
-    ["Consults", bmi40 * .022],
-    ["Surgeries", bmi40 * .011]
+    ["BMI > 35 Male", Math.round(malePop * .17)],
+    ["BMI > 35 Female", Math.round(femalePop * .217)],
+    ["Total Market BMI > 35", Math.round(bmi35)],
+    ["Actively Searching Rate", Math.round(activelySearching)],
+    ["Estimated Self Referrals", Math.round(referrals * .7)],
+    ["Estimated Clinical Referrals", Math.round(referrals * .3)],
+    ["Estimated Total Referrals", Math.round(referrals)],
+    ["Estimated Consults", Math.round(consults)],
+    ["Estimated Surgeries", Math.round(consults * .5)],
+    ["BMI > 40 Male", Math.round(malePop * .069)],
+    ["BMI > 40 Female", Math.round(femalePop * .115)],
+    ["Total Market BMI > 40", Math.round(bmi40)],
+    ["Estimated Consults BMI > 40", Math.round(bmi40 * .022)],
+    ["Estimated Surgeries BMI > 40", Math.round(bmi40 * .011)]
   ];
 
   if (created == false) {
-  for (let i = 0; i < 13; i++) {
+  for (let i = 0; i < 16; i++) {
     rows[i] = document.createElement('tr');
     rows[i].appendChild(document.createElement('td'));
     rows[i].appendChild(document.createElement('td'));
     countyTable.appendChild(rows[i]);
   }
-}
-  for (let i in countyTable.rows) {
-    countyTable.rows[i].cells[0].innerText = columnValues[i][0];
-    countyTable.rows[i].cells[1].innerText = Math.round(columnValues[i][1]);
-  }
-
   created = true;
+}
 
-  // while (countyList.firstChild) {countyList.removeChild(countyList.firstChild);}
-  // selectedMap.forEach(async (population, county) => {
-  //   let li = document.createElement('li');
-  //   li.innerText = county.properties.NAME + " County "+ population["population"][0] + " " + population["population"][1];
-  //   countyList.appendChild(li);
-  // });
-  // let mP = document.createElement('li');
-  // let fP = document.createElement('li');
 
-  // mP.innerText = "Male Pop: " + malePop;
-  // fP.innerText = "Female Pop: " + femalePop;
-
-  // countyList.appendChild(mP);
-  // countyList.appendChild(fP);
+const numberWithCommas = (x) => {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+  console.log(countyTable.rows);
+  for (let i = 0; i < 16; i++) {
+    console.log("before " + i);
+    let value = columnValues[i][0];
+    console.log("after " + i);
+    countyTable.rows[i].cells[0].innerText = value;
+    countyTable.rows[i].cells[1].innerText = numberWithCommas(columnValues[i][1]);
   }
 
+  let layout = {margin: {l: 130, r: 0}, width: 600, funnelmode: "stack", showlegend: true}
+
+
+  let data = [{ type: 'funnel', name: 'BMI > 35 (x10)',
+                y: ["Total Market"],
+                x: [columnValues[4][1]],
+                textinfo: "value"},
+  {
+    type: 'funnel',name: 'Self-Referral',
+    y: ["Actively Searching", "Referral", "Consult", "Surgery"],
+    x: [numberWithCommas(columnValues[5][1]), columnValues[6][1], Math.round(columnValues[6][1] * .8), Math.round(columnValues[6][1] * .8 * .5)], textinfo: "value"},
+  {
+    type: 'funnel',name: 'Physician Referral',
+    y: ["Referral", "Consult", "Surgery"],
+    x: [columnValues[7][1], Math.round(columnValues[7][1] * .348), Math.round(columnValues[7][1] * .348 * .5)]}];
+
+  Plotly.newPlot('funnel', data, layout);
+
+  }
+
+  function autocomplete(inp, arr) {
+    /*the autocomplete function takes two arguments,
+    the text field element and an array of possible autocompleted values:*/
+    var currentFocus;
+    /*execute a function when someone writes in the text field:*/
+    inp.addEventListener("input", function(e) {
+        var a, b, i, val = this.value;
+        /*close any already open lists of autocompleted values*/
+        closeAllLists();
+        if (!val) { return false;}
+        currentFocus = -1;
+        /*create a DIV element that will contain the items (values):*/
+        a = document.createElement("DIV");
+        a.setAttribute("id", this.id + "autocomplete-list");
+        a.setAttribute("class", "autocomplete-items");
+        /*append the DIV element as a child of the autocomplete container:*/
+        this.parentNode.appendChild(a);
+        /*for each item in the array...*/
+        for (i = 0; i < arr.length; i++) {
+          /*check if the item starts with the same letters as the text field value:*/
+          if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+            /*create a DIV element for each matching element:*/
+            b = document.createElement("DIV");
+            /*make the matching letters bold:*/
+            b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+            b.innerHTML += arr[i].substr(val.length);
+            /*insert a input field that will hold the current array item's value:*/
+            b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+            /*execute a function when someone clicks on the item value (DIV element):*/
+                b.addEventListener("click", function(e) {
+                /*insert the value for the autocomplete text field:*/
+                inp.value = this.getElementsByTagName("input")[0].value;
+                /*close the list of autocompleted values,
+                (or any other open lists of autocompleted values:*/
+                closeAllLists();
+            });
+            a.appendChild(b);
+          }
+        }
+    });
+    /*execute a function presses a key on the keyboard:*/
+    inp.addEventListener("keydown", function(e) {
+        var x = document.getElementById(this.id + "autocomplete-list");
+        if (x) x = x.getElementsByTagName("div");
+        if (e.keyCode == 40) {
+          /*If the arrow DOWN key is pressed,
+          increase the currentFocus variable:*/
+          currentFocus++;
+          /*and and make the current item more visible:*/
+          addActive(x);
+        } else if (e.keyCode == 38) { //up
+          /*If the arrow UP key is pressed,
+          decrease the currentFocus variable:*/
+          currentFocus--;
+          /*and and make the current item more visible:*/
+          addActive(x);
+        } else if (e.keyCode == 13) {
+          /*If the ENTER key is pressed, prevent the form from being submitted,*/
+          e.preventDefault();
+          if (currentFocus > -1) {
+            /*and simulate a click on the "active" item:*/
+            if (x) x[currentFocus].click();
+          }
+        }
+    });
+    function addActive(x) {
+      /*a function to classify an item as "active":*/
+      if (!x) return false;
+      /*start by removing the "active" class on all items:*/
+      removeActive(x);
+      if (currentFocus >= x.length) currentFocus = 0;
+      if (currentFocus < 0) currentFocus = (x.length - 1);
+      /*add class "autocomplete-active":*/
+      x[currentFocus].classList.add("autocomplete-active");
+    }
+    function removeActive(x) {
+      /*a function to remove the "active" class from all autocomplete items:*/
+      for (var i = 0; i < x.length; i++) {
+        x[i].classList.remove("autocomplete-active");
+      }
+    }
+    function closeAllLists(elmnt) {
+      /*close all autocomplete lists in the document,
+      except the one passed as an argument:*/
+      var x = document.getElementsByClassName("autocomplete-items");
+      for (var i = 0; i < x.length; i++) {
+        if (elmnt != x[i] && elmnt != inp) {
+        x[i].parentNode.removeChild(x[i]);
+      }
+    }
+  }
+  /*execute a function when someone clicks in the document:*/
+  document.addEventListener("click", function (e) {
+      closeAllLists(e.target);
+  });
+  }
+
+  autocomplete(document.getElementById("hospitalInput"), hospitalNames);
+
+  const hospitalForm = document.getElementById("HospitalForm");
+
+  let defToken = null;
+
+  const getToken = () => {
+    const tokenRequest = new Request("https://api.defhc.com/v5/token", {
+      method: "POST",
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({"grant_type": "password", "username": def_user, "password": def_pass})
+    });
+
+    return fetch(tokenRequest)
+            .then(response => response.json())
+            .then(json => json.access_token);
+  }
+
+  const getHospitalData = (hospitalId, token) => {
+    console.log("sent request");
+    const dataRequest = new Request("https://api.defhc.com/v5/odata-v4/Hospitals(${hospitalId})")
+  }
+
+  hospitalForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log("Clicked");
+    if (!defToken) {
+      defToken = await getToken()
+    }
+    console.log(defToken);
+    getHospitalData("0", defToken);
+  });

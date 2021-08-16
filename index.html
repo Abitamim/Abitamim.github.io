@@ -18,48 +18,10 @@
       crossorigin=""
     ></script>
 
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-      }
-      #map {
-        width: 600px;
-        height: 400px;
-      }
-    </style>
+    <script src='https://cdn.plot.ly/plotly-2.3.0.min.js'></script>
 
-    <style>
-      #map {
-        width: 800px;
-        height: 500px;
-      }
-      .info {
-        padding: 6px 8px;
-        font: 14px/16px Arial, Helvetica, sans-serif;
-        background: white;
-        background: rgba(255, 255, 255, 0.8);
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-        border-radius: 5px;
-      }
-      .info h4 {
-        margin: 0 0 5px;
-        color: #777;
-      }
-      .legend {
-        text-align: left;
-        line-height: 18px;
-        color: #555;
-      }
-      .legend i {
-        width: 18px;
-        height: 18px;
-        float: left;
-        margin-right: 8px;
-        opacity: 0.7;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="autocomplete.css">
   </head>
   <body>
     <div id="map"></div>
@@ -68,12 +30,47 @@
     <script type="text/javascript" src="county_data.js"></script>
 
     <script type="text/javascript" src="main.js" defer></script>
+    <script type="text/javascript" src="hospital_name_id.js"></script>
+    <script type="text/javascript" src="not_secure_definitive_auth.js"></script>
+    <script type="text/javascript" src="surgery_cost.js"></script>
 
-	<!-- <ol id="CountyList">
-    <li>Male Pop: 0</li>
-    <li>Female Pop: 0</li>
-  </ol> -->
-  <table id="CountyTable", style="width:50%">
+
+  <table id="CountyTable", style="width:100%">
   </table>
+  <div id="funnel", style="width:100%">
+  </div>
+  <form id="HospitalForm" autocomplete="off">
+    <div class="autocomplete" style="width:300px;">
+      <input id="hospitalInput" type="text" name="hospital" placeholder="Hospital">
+    </div>
+    <input type="submit">
+  </form>
+
+  <form id="ROIForm" autocomplete="off">
+    <fieldset style="width:50%">
+      <legend>Return on Investment</legend>
+      <div class="roi">
+        <label for="states">State</label>
+        <select id="states">
+        </select>
+        </div>      
+      <div class="roi">
+      <label for="curRev">Current Revenue</label>
+      <input id="curRev" type="number" name="curRev" placeholder="Current Revenue">
+      </div>
+      <div class="roi">
+      <label for="noBypass">No. Gastric Bypass Surgeries</label>
+      <input id="noBypass" type="number" name="noBypass" placeholder="No. Gastric Bypass Surgeries">
+      </div>
+      <div class="roi">
+        <label for="noSleeve">No. Gastric Sleeve Surgeries</label>
+        <input id="noSleeve" type="number" name="noSleeve"
+        placeholder="No. Gastric Sleeve Surgeries">
+      </div>
+
+    </fieldset>
+    <input type="submit">
+  </form>
+  
   </body>
 </html>
