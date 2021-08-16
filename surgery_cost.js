@@ -1,4 +1,4 @@
-const prices = {'   ':[25571,16800],
+const prices = {'':[25571,16800],
 'Alabama':[20025,14935],
 'Alaska':[25571,16800],
 'Arizona':[25480,20470],
@@ -51,3 +51,11 @@ const prices = {'   ':[25571,16800],
 'Wisconsin':[29100,17340],
 'Wyoming':[30070,22250]
 };
+
+//[year 1], [year 2], [year 3]
+//[requested consult, consult success, pullthrough rate]
+let wellbeImprovement = [
+    [1.09, 1.08, 1.09], 
+    [1.08, 1.09, 1.11], 
+    [1.09, 1.05, 1.1]
+];

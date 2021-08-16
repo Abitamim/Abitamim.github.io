@@ -40,6 +40,9 @@ info.addTo(map);
 const dropdown = document.getElementById("states");
 for (let [state, price] of Object.entries(prices)) {
   let option = document.createElement("option");
+  if (state == '') {
+    option.selected = true;
+  }
   option.text = state;
   dropdown.appendChild(option);
 }
@@ -103,8 +106,12 @@ const selectedMap = new Map();
 let malePop = 0;
 let femalePop = 0;
 
+let roiState = document.getElementById("states");
+
 async function highlightFeature(e) {
   var layer = e.target;
+
+  roiState.selected = "John";
 
   if (selectedMap.has(layer.feature)) {
       resetHighlight(e);
@@ -206,7 +213,6 @@ geojson_states_noclick = L.geoJson(statesData, {
 });
 
 map.on("zoomend", function () {
-  console.log(map.getZoom());
   if (map.getZoom() < 6) {
     map.removeLayer(geojson);
     map.addLayer(geojson_states);
