@@ -318,6 +318,7 @@ const numberWithCommas = (x) => {
 
   let layout = {margin: {l: 130, r: 0}, autosize: true, funnelmode: "stack", showlegend: true}
 
+  let config = {responsive: true};
 
   let data = [{ type: 'funnel', name: 'BMI > 35 (x10)',
                 y: ["Total Market"],
@@ -332,7 +333,7 @@ const numberWithCommas = (x) => {
     y: ["Referral", "Consult", "Surgery"],
     x: [columnValues[7][1], Math.round(columnValues[7][1] * .348), Math.round(columnValues[7][1] * .348 * .5)]}];
 
-  Plotly.newPlot('funnel', data, layout);
+  Plotly.newPlot('funnel', data, layout, config);
 
   }
 
