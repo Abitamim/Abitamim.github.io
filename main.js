@@ -316,12 +316,12 @@ const numberWithCommas = (x) => {
     countyTable.rows[i].cells[1].innerText = numberWithCommas(columnValues[i][1]);
   }
 
-  let layout = {margin: {l: 130, r: 0}, width: 600, funnelmode: "stack", showlegend: true}
+  let layout = {margin: {l: 130, r: 0}, autosize: true, funnelmode: "stack", showlegend: true}
 
 
   let data = [{ type: 'funnel', name: 'BMI > 35 (x10)',
                 y: ["Total Market"],
-                x: [columnValues[4][1]],
+                x: [columnValues[4][1] / 10],
                 textinfo: "value"},
   {
     type: 'funnel',name: 'Self-Referral',
