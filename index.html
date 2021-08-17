@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Choropleth Tutorial - Leaflet</title>
+    <title>Wellbe TAM and ROI</title>
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,6 +33,8 @@
     <script type="text/javascript" src="hospital_name_id.js"></script>
     <script type="text/javascript" src="not_secure_definitive_auth.js"></script>
     <script type="text/javascript" src="surgery_cost.js"></script>
+    <script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    
 
 
   <table id="CountyTable", style="width:100%">
@@ -48,27 +50,27 @@
 
   <form id="ROIForm" autocomplete="off">
     <fieldset style="width:50%">
-      <legend>Return on Investment</legend>
+      <legend>Return on Investment Inputs</legend>
       <div class="roi">
         <label for="states">State</label>
         <select id="states">
         </select>
         </div>      
       <div class="roi">
-      <label for="curRev">Current Revenue</label>
+      <label for="curRev">No. Total Bariatric Surgeries</label>
       <input id="curRev" type="number" name="curRev" placeholder="No. Total Bariatric Surgeries">
       </div>
       <div class="roi">
       <label for="noBypass">No. Gastric Bypass Surgeries</label>
-      <input id="noBypass" type="number" name="noBypass" placeholder="No. Gastric Bypass Surgeries">
+      <input id="noBypass" type="number" name="noBypass" placeholder="Optional">
       </div>
       <div class="roi">
         <label for="noSleeve">No. Gastric Sleeve Surgeries</label>
         <input id="noSleeve" type="number" name="noSleeve"
-        placeholder="No. Gastric Sleeve Surgeries">
+        placeholder="Optional">
       </div>
       <div class="roi">
-        <label for="noConsult">No. Gastric Sleeve Surgeries</label>
+        <label for="noConsult">No. Surgical Consults</label>
         <input id="noConsult" type="number" name="noConsult"
         placeholder="No. Surgical Consults">
       </div>
@@ -92,9 +94,13 @@
         <input id="growth" type="number" name="growth"
         value=3>
       </div>
-    </fieldset>
+    </fieldset></br>
     <input type="submit">
-  </form>
-  
+  </form></br></br>
+  <fieldset style="width:50%">
+    <legend>Return on Investment Output</legend>
+    <p id="marginGainVal">0</p>
+    <div id="netMargin" style="height: 370px; width: 100%;"></div>\
+  </fieldset>
   </body>
 </html>

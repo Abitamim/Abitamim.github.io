@@ -472,3 +472,45 @@ const numberWithCommas = (x) => {
     console.log(defToken);
     getHospitalData("0", defToken);
   });
+
+  ROIForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log("Clicked");
+    // if (!defToken) {
+    //   defToken = await getToken()
+    // }
+    // console.log(defToken);
+    // getHospitalData("0", defToken);
+  });
+
+  window.onload = () =>{
+
+    let chart = new CanvasJS.Chart("netMargin", {
+      animationEnabled: true,
+      title:{
+        text: "Customer Satisfaction Based on Reviews"
+      },
+      axisY: {
+        title: "Satisfied Customers",
+        includeZero: true,
+        suffix: "%"
+      },
+      data: [{
+        type: "stepArea",
+        markerSize: 5,
+        // xValueFormatString: "YYYY",
+        yValueFormatString: "#,##0.##\"%\"",
+        dataPoints: [
+          { x: "Year 1", y: 34 },
+          { x: "Year 2", y: 73 },
+          // { x: new Date(2012, 0), y: 78 },
+          // { x: new Date(2013, 0), y: 82 },
+          // { x: new Date(2014, 0), y: 70 },
+          // { x: new Date(2015, 0), y: 86 },
+          // { x: new Date(2016, 0), y: 80 }
+        ]
+      }]
+    });
+    chart.render();
+    
+    }
