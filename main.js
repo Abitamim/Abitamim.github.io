@@ -473,9 +473,111 @@ const numberWithCommas = (x) => {
     getHospitalData("0", defToken);
   });
 
+  let totalSurgeries = document.getElementById("noSurgery");
+  let bypass = document.getElementById("noBypass");
+  let sleeve = document.getElementById("noSleeve");
+  let totalConsults = document.getElementById("noConsult");
+  let percentConsult = document.getElementById("perConsult");
+  let margin = document.getElementById("marSurgery");
+  let medicalIntake = document.getElementById("intake");
+  let growth = document.getElementById("growth");
+
+
+  const calcCost = (numSurgeries) => {
+    numSurgeries = parseInt(numSurgeries);
+    switch (true) {
+      case (numSurgeries <= 150):
+        return 56000;
+      case (numSurgeries <= 350):
+        return 75000;
+      case (numSurgeries <= 650):
+        return 113000;
+      return 151000;
+    }
+  }
+  const calcMarginGrowth = () => {
+    const intake = parseFloat(medicalIntake.value);
+    const surgery = parseFloat(totalSurgeries.value);
+    const consult = parseFloat(totalConsults.value);
+    const percent = parseFloat(percentConsult.value) * .01;
+    const marginVal = parseFloat(margin.value);
+    const growthVal = 1 + parseFloat(growth.value) * .01;
+
+    let statusQuo = {
+      "supervised": {
+        "intake": [intake, intake * growthVal, intake * growthVal * growthVal]
+      },
+      "surgical": {},
+    };
+
+    //[w/o Wellbe, Year 1, Year 2, Year 3]
+    //[intake to appointment %, consult to surgery %]
+    let pullThroughRate = [
+      [0, 0],
+      [0, 0],
+      [0, 0],
+      [0, 0]
+    ];
+
+    statusQuo["supervised"]["goToSurgery"] = statusQuo["supervised"]["intake"].map(x => x * .125);
+    statusQuo["surgical"]["consults"] = [consult, consult * growthVal, consult * growthVal * growthVal];
+    const reqConsultInitial = ((consult*percent)/.569)+((consult*(1-percent))/.75);
+    statusQuo["surgical"]["requestedConsults"] = [reqConsultInitial, reqConsultInitial * growthVal, reqConsultInitial * growthVal * growthVal];
+    statusQuo["surgical"]["surgery"] = [
+      surgery+statusQuo["supervised"]["goToSurgery"][0]*.5,
+      0,
+      0
+    ];
+    
+    pullThroughRate[0][0] = statusQuo["surgical"]["consults"][0] / statusQuo["surgical"]["requestedConsults"][0];
+    pullThroughRate[0][1] = statusQuo["surgical"]["surgery"][0] / statusQuo["surgical"]["consults"][0];
+    pullThroughRate[1][0] = pullThroughRate[0][0] * wellbeImprovement[0][1];
+    pullThroughRate[1][1] = pullThroughRate[0][1] * wellbeImprovement[0][2];
+    pullThroughRate[2][0] = pullThroughRate[1][0] * wellbeImprovement[1][1];
+    pullThroughRate[2][1] = pullThroughRate[1][1] * wellbeImprovement[1][2];
+    pullThroughRate[3][0] = pullThroughRate[2][0] * wellbeImprovement[2][1];
+    pullThroughRate[3][1] = pullThroughRate[2][1] * wellbeImprovement[2][2];
+
+    statusQuo["surgical"]["surgery"][1] = statusQuo["surgical"]["consults"][1]*pullThroughRate[0][1]+statusQuo["supervised"]["goToSurgery"][0]*.5+statusQuo["supervised"]["goToSurgery"][1]*.5,
+    statusQuo["surgical"]["surgery"][2] = statusQuo["surgical"]["consults"][2]*pullThroughRate[0][1]+statusQuo["supervised"]["goToSurgery"][1]*.5+statusQuo["supervised"]["goToSurgery"][2]*.5
+    const wellbeMedConsultInitial = statusQuo["supervised"]["intake"][0]*wellbeImprovement[0][0];
+    const wellbeReqConsultInitial = statusQuo["surgical"]["requestedConsults"][0]*wellbeImprovement[0][0];
+    let afterWellbe = {
+      "supervised": {
+        "intake": [wellbeMedConsultInitial, wellbeMedConsultInitial*wellbeImprovement[1][0], wellbeMedConsultInitial*wellbeImprovement[1][0]*wellbeImprovement[2][0]]
+      },
+      "surgical": {
+        "requestedConsults": [wellbeReqConsultInitial, wellbeReqConsultInitial*wellbeImprovement[1][0], wellbeReqConsultInitial*wellbeImprovement[1][0]*wellbeImprovement[2][0]]
+      }
+    };
+    afterWellbe["supervised"]["goToSurgery"] = afterWellbe["supervised"]["intake"].map(x => x * .1875);
+
+    afterWellbe["surgical"]["consults"] = [
+      afterWellbe["surgical"]["requestedConsults"][0]*pullThroughRate[1][0], 
+      afterWellbe["surgical"]["requestedConsults"][1]*pullThroughRate[2][0],
+      afterWellbe["surgical"]["requestedConsults"][2]*pullThroughRate[3][0]
+    ];
+    
+    afterWellbe["surgical"]["surgery"] = [
+      afterWellbe["surgical"]["consults"][0]*pullThroughRate[1][1]+afterWellbe["supervised"]["goToSurgery"][0]*.5,
+      afterWellbe["surgical"]["consults"][1]*pullThroughRate[2][1]+afterWellbe["supervised"]["goToSurgery"][0]*.5+afterWellbe["supervised"]["goToSurgery"][1]*.5,
+      afterWellbe["surgical"]["consults"][2]*pullThroughRate[3][1]+afterWellbe["supervised"]["goToSurgery"][1]*.5+afterWellbe["supervised"]["goToSurgery"][2]*.5
+    ];
+
+    let netMargin = afterWellbe["surgical"]["surgery"].map(x => x*marginVal-calcCost(x));
+    let preMargin = statusQuo["surgical"]["surgery"].map(x => x*marginVal);
+    let netGain = [-23000, 0, 0]
+    for (let i = 0; i < netMargin.length; i++) {
+      netGain[i] += parseInt(netMargin[i] - preMargin[i]);
+    }
+    return netGain;
+    let x = 1;
+  }
+
   ROIForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     console.log("Clicked");
+    buildGraph(calcMarginGrowth());
     // if (!defToken) {
     //   defToken = await getToken()
     // }
@@ -483,34 +585,37 @@ const numberWithCommas = (x) => {
     // getHospitalData("0", defToken);
   });
 
-  window.onload = () =>{
+  const buildGraph = (values) =>{
 
     let chart = new CanvasJS.Chart("netMargin", {
       animationEnabled: true,
       title:{
-        text: "Customer Satisfaction Based on Reviews"
+        text: "Net Margin Gain"
       },
-      axisY: {
-        title: "Satisfied Customers",
-        includeZero: true,
-        suffix: "%"
+      axisY:{
+        title: "Net Margin Gain"
       },
-      data: [{
-        type: "stepArea",
-        markerSize: 5,
-        // xValueFormatString: "YYYY",
-        yValueFormatString: "#,##0.##\"%\"",
-        dataPoints: [
-          { x: "Year 1", y: 34 },
-          { x: "Year 2", y: 73 },
-          // { x: new Date(2012, 0), y: 78 },
-          // { x: new Date(2013, 0), y: 82 },
-          // { x: new Date(2014, 0), y: 70 },
-          // { x: new Date(2015, 0), y: 86 },
-          // { x: new Date(2016, 0), y: 80 }
-        ]
-      }]
-    });
+      axisX:{
+        minValue: 0,
+        maxValue: 4,
+        interval: 1,
+        title: "Year",
+        gridThickness: 1,
+        tickLength: 1
+       },
+ 
+       data: [
+       {
+         type: "area",
+         dataPoints: [
+        { x: 0, y: 0},
+         { x: 1, y: values[0] },
+         { x: 2, y: values[1] },
+         { x: 3, y: values[2] }
+         ]
+       }
+       ]
+     });
     chart.render();
     
     }

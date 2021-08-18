@@ -55,7 +55,7 @@ const prices = {'':[25571,16800],
 //[year 1], [year 2], [year 3]
 //[requested consult, consult success, pullthrough rate]
 let wellbeImprovement = [
-    [1.09, 1.08, 1.09], 
-    [1.08, 1.09, 1.11], 
-    [1.09, 1.05, 1.1]
+    [1.06, 1.08, 1.08], 
+    [1.1, 1.09, 1.09], 
+    [1.08, 1.07, 1.07]
 ];
