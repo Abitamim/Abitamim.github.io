@@ -482,6 +482,64 @@ const numberWithCommas = (x) => {
   let medicalIntake = document.getElementById("intake");
   let growth = document.getElementById("growth");
 
+  let modified = 0; //0 for false, 1 for sleeve modified, 2 for bypass modified, 3 for both modified
+
+  totalSurgeries.addEventListener('change', () => {
+    if (modified == 0) {
+      bypass.value = parseInt(parseInt(totalSurgeries.value) * .3);
+      sleeve.value = parseInt(totalSurgeries.value) - parseInt(bypass.value);
+    } else if (modified == 3) {
+      let bypassPer = bypass.value / (parseInt(bypass.value) + parseInt(sleeve.value));
+      bypass.value = parseInt(totalSurgeries.value * bypassPer);
+      sleeve.value = parseInt(totalSurgeries.value) - parseInt(bypass.value);
+    } else if (modified == 1) {
+      bypass.value = parseInt(totalSurgeries.value) - parseInt(sleeve.value);
+    } else {
+      sleeve.value = parseInt(totalSurgeries.value) - parseInt(bypass.value);
+    }
+  });
+
+  bypass.addEventListener('change', () => {
+    if (modified == 0) {
+      modified = 2;
+    } else if (modified == 1) {
+      modified = 3;
+    }
+
+    if (modified == 2 && totalSurgeries.value) {
+      sleeve.value = parseInt(totalSurgeries.value) - parseInt(bypass.value);
+    }
+
+    if (modified == 2 && !totalSurgeries.value) {
+      totalSurgeries.value = bypass.value;
+    }
+
+    if (modified == 3) {
+      totalSurgeries.value = parseInt(sleeve.value) + parseInt(bypass.value);
+    }
+  });
+
+  sleeve.addEventListener('change', () => {
+    if (modified == 0) {
+      modified = 1;
+    } else if (modified == 2) {
+      modified = 3;
+    }
+
+    if (modified == 1 && totalSurgeries.value) {
+      sleeve.value = parseInt(totalSurgeries.value) - parseInt(bypass.value);
+    }
+
+    if (modified == 1 && !totalSurgeries.value) {
+      totalSurgeries.value = sleeve.value;
+    }
+
+
+    if (modified == 3) {
+      totalSurgeries.value = parseInt(sleeve.value) + parseInt(bypass.value);
+    }
+  });
+
 
   const calcCost = (numSurgeries) => {
     numSurgeries = parseInt(numSurgeries);
@@ -492,7 +550,8 @@ const numberWithCommas = (x) => {
         return 75000;
       case (numSurgeries <= 650):
         return 113000;
-      return 151000;
+      case (numSurgeries >= 660):
+        return 151000;
     }
   }
   const calcMarginGrowth = () => {
@@ -573,6 +632,8 @@ const numberWithCommas = (x) => {
     return netGain;
     let x = 1;
   }
+
+
 
   ROIForm.addEventListener('submit', async (e) => {
     e.preventDefault();
