@@ -483,6 +483,8 @@ const numberWithCommas = (x) => {
   let growth = document.getElementById("growth");
 
   let modified = 0; //0 for false, 1 for sleeve modified, 2 for bypass modified, 3 for both modified
+  let consultModified = false;
+
 
   totalSurgeries.addEventListener('change', () => {
     if (modified == 0) {
@@ -496,6 +498,17 @@ const numberWithCommas = (x) => {
       bypass.value = parseInt(totalSurgeries.value) - parseInt(sleeve.value);
     } else {
       sleeve.value = parseInt(totalSurgeries.value) - parseInt(bypass.value);
+    }
+
+    if (!consultModified || parseInt(consultModified.value) < parseInt(totalSurgeries.value)) {
+      totalConsults.value = parseInt(totalSurgeries.value) * 2;
+    }
+  });
+
+  totalConsults.addEventListener('change', () => {
+    consultModified = true;
+    if (parseInt(totalConsults.value) < parseInt(totalSurgeries.value)) {
+      totalConsults.value = parseInt(totalSurgeries.value) * 2;
     }
   });
 
@@ -543,16 +556,13 @@ const numberWithCommas = (x) => {
 
   const calcCost = (numSurgeries) => {
     numSurgeries = parseInt(numSurgeries);
-    switch (true) {
-      case (numSurgeries <= 150):
-        return 56000;
-      case (numSurgeries <= 350):
-        return 75000;
-      case (numSurgeries <= 650):
-        return 113000;
-      case (numSurgeries >= 660):
-        return 151000;
-    }
+    if (numSurgeries <= 150){
+      return 56000;}
+    if (numSurgeries <= 350){
+      return 75000;}
+    if (numSurgeries <= 650){
+      return 113000;}
+    return 151000;
   }
   const calcMarginGrowth = () => {
     const intake = parseFloat(medicalIntake.value);
@@ -623,7 +633,8 @@ const numberWithCommas = (x) => {
       afterWellbe["surgical"]["consults"][2]*pullThroughRate[3][1]+afterWellbe["supervised"]["goToSurgery"][1]*.5+afterWellbe["supervised"]["goToSurgery"][2]*.5
     ];
 
-    let cost = 0;
+    const implementationCost = 23000;
+    let cost = implementationCost;
 
     const costVal = (surgeries) => {
       let tempCost = calcCost(surgeries);
@@ -633,7 +644,7 @@ const numberWithCommas = (x) => {
 
     let netMargin = afterWellbe["surgical"]["surgery"].map(x => x*marginVal-costVal(x));
     let preMargin = statusQuo["surgical"]["surgery"].map(x => x*marginVal);
-    let netGain = [-23000, 0, 0]
+    let netGain = [-implementationCost, 0, 0]
     for (let i = 0; i < netMargin.length; i++) {
       netGain[i] += parseInt(netMargin[i] - preMargin[i]);
     }
@@ -688,5 +699,5 @@ const numberWithCommas = (x) => {
        ]
      });
     chart.render();
-    threeYearGain.innerHTML = "3 Year ROI: " + (values[0].reduce((a, b) => a + b, 0) / values[1]).toFixed(1);
+    threeYearGain.innerHTML = "3 Year ROI: " + (values[0].reduce((a, b) => a + b, 0) / values[1]).toFixed(1) + "x";
     }
