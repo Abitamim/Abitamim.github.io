@@ -623,13 +623,21 @@ const numberWithCommas = (x) => {
       afterWellbe["surgical"]["consults"][2]*pullThroughRate[3][1]+afterWellbe["supervised"]["goToSurgery"][1]*.5+afterWellbe["supervised"]["goToSurgery"][2]*.5
     ];
 
-    let netMargin = afterWellbe["surgical"]["surgery"].map(x => x*marginVal-calcCost(x));
+    let cost = 0;
+
+    const costVal = (surgeries) => {
+      let tempCost = calcCost(surgeries);
+      cost += tempCost;
+      return tempCost;
+    }
+
+    let netMargin = afterWellbe["surgical"]["surgery"].map(x => x*marginVal-costVal(x));
     let preMargin = statusQuo["surgical"]["surgery"].map(x => x*marginVal);
     let netGain = [-23000, 0, 0]
     for (let i = 0; i < netMargin.length; i++) {
       netGain[i] += parseInt(netMargin[i] - preMargin[i]);
     }
-    return netGain;
+    return [netGain, cost];
     let x = 1;
   }
 
@@ -646,12 +654,14 @@ const numberWithCommas = (x) => {
     // getHospitalData("0", defToken);
   });
 
+  const threeYearGain = document.getElementById("marginGainVal");
+
   const buildGraph = (values) =>{
 
     let chart = new CanvasJS.Chart("netMargin", {
       animationEnabled: true,
       title:{
-        text: "Net Margin Gain"
+        text: "Increased Profit"
       },
       axisY:{
         title: "Net Margin Gain"
@@ -670,13 +680,13 @@ const numberWithCommas = (x) => {
          type: "area",
          dataPoints: [
         { x: 0, y: 0},
-         { x: 1, y: values[0] },
-         { x: 2, y: values[1] },
-         { x: 3, y: values[2] }
+         { x: 1, y: values[0][0] },
+         { x: 2, y: values[0][1] },
+         { x: 3, y: values[0][2] }
          ]
        }
        ]
      });
     chart.render();
-    
+    threeYearGain.innerHTML = "3 Year ROI: " + (values[0].reduce((a, b) => a + b, 0) / values[1]).toFixed(1);
     }
